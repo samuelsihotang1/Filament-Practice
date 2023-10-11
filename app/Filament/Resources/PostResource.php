@@ -24,6 +24,7 @@ use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Support\Str;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class PostResource extends Resource
 {
@@ -56,7 +57,11 @@ class PostResource extends Resource
               '16:9',
               '4:3',
               '1:1',
-            ]),
+            ])
+            ->getUploadedFileNameForStorageUsing(
+              fn (TemporaryUploadedFile $file): string => (string) str($file->getClientOriginalName())
+                  ->prepend(auth()->user()->name . '-'),
+          ),
           Select::make('category_id')
             ->label('Category')
             ->options(Category::all()->pluck('name', 'id'))
@@ -72,12 +77,12 @@ class PostResource extends Resource
     return $table
       ->columns([
         TextColumn::make('title')->limit(50)->sortable(),
-        TextColumn::make('category.name')->limit(50),
+        TextColumn::make('category.name')->limit(50)->sortable(),
 
         // Hanya Gabut
         TextColumn::make('content')->html(),
         ImageColumn::make('cover'),
-        ToggleColumn::make('status'),
+        ToggleColumn::make('status')->sortable(),
       ])
       ->filters([
         //
