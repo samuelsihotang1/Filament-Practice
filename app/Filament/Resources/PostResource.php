@@ -59,9 +59,10 @@ class PostResource extends Resource
               '1:1',
             ])
             ->getUploadedFileNameForStorageUsing(
-              fn (TemporaryUploadedFile $file): string => (string) str($file->getClientOriginalName())
-                  ->prepend(auth()->user()->name . '-'),
-          ),
+              fn (TemporaryUploadedFile $file): string => (string) str('.' . $file->getClientOriginalExtension())
+                ->prepend(auth()->user()->id . '-' . Str::random(10))
+            )
+            ->moveFiles(),
           Select::make('category_id')
             ->label('Category')
             ->options(Category::all()->pluck('name', 'id'))
@@ -80,7 +81,8 @@ class PostResource extends Resource
         TextColumn::make('category.name')->limit(50)->sortable(),
 
         // Hanya Gabut
-        TextColumn::make('content')->html(),
+        TextColumn::make('content')->html()->limit(100),
+
         ImageColumn::make('cover'),
         ToggleColumn::make('status')->sortable(),
       ])
